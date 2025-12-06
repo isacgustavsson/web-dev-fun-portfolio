@@ -1,0 +1,29 @@
+<div id="nav">
+  <p id="navHead">isac gustavsson</p>
+
+  <input type="checkbox" id="toggle" />
+  <label for="toggle" class="hamburger">&#9776;</label>
+
+  <ul id="navItems">
+    <input type="checkbox" id="toggle" />
+    <label for="toggle" class="hamburger2">&#10005;</label>
+
+    <li><a href="/">
+        <h1> Home<span style="color: #00FFC5">.</span></h1></a></li>
+    <li><a href="/work">
+        <h1>Work<span style="color: #00FFC5">.</span></h1>
+      </a></li>
+    <li><a href="/contact">
+        <h1>Contact<span style="color: #00FFC5">.</span></h1>
+      </a></li>
+    {{#if isLoggedIn}}
+      <li><a href="/logout">
+          <h1>Sign Out<span style="color: #00FFC5">.</span></h1>
+        </a></li>
+    {{else}}
+      <li><a href="/login">
+          <h1>Sign In<span style="color: #00FFC5">.</span></h1>
+        </a></li>
+    {{/if}}
+  </ul>
+</div>

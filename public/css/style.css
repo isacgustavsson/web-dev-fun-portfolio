@@ -1,0 +1,663 @@
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bitter&display=swap");
+
+/* *****************
+
+  Global Styles 
+
+******************* */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+body {
+  height: 100%;
+  background-color: #faf3dd;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: "Open Sans", sans-serif;
+  color: #2f2f2f;
+  margin-bottom: 0.25rem;
+}
+
+h1 {
+  font-size: 2rem;
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: 1.625rem;
+  line-height: 1.25;
+}
+
+h3 {
+  font-size: 1.5rem;
+}
+
+h4 {
+  font-size: 1.25rem;
+}
+
+p {
+  font-family: "Bitter", serif;
+  font-size: 1rem;
+  line-height: 1.25;
+  color: #272b2b;
+}
+
+a {
+  font-family: "Open Sans", sans-serif;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #43474c;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  margin-left: 1.5rem;
+  margin-right: 1.5rem;
+}
+
+/* *****************
+
+  Navigation Styles
+
+******************* */
+
+#navHead {
+  font-size: 1rem;
+}
+
+#nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  padding-top: 0.5rem;
+}
+
+#nav input[type="checkbox"] {
+  display: none;
+}
+#navItems {
+  display: none;
+}
+
+#navItems h1 {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+#navItems span {
+  margin-left: 0.1rem;
+}
+
+#toggle:checked ~ #navItems {
+  display: flex;
+  width: 50%;
+  height: 100%;
+  flex-direction: column;
+  justify-content: center;
+  position: fixed;
+  top: 50%;
+  left: 75%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  background-color: #6f8695;
+
+  padding: 1rem;
+  list-style-type: none;
+}
+
+#toggle:checked ~ .hamburger {
+  display: none;
+}
+
+#toggle:checked ~ #navItems .hamburger2 {
+  position: absolute;
+  top: 0%;
+  right: 0%;
+  padding: 1rem;
+  font-size: 1rem;
+}
+
+.hamburger {
+  font-size: 2.5rem;
+  color: #1e1e24;
+  cursor: pointer;
+}
+
+/************************* 
+
+FORM SETTINGS 
+
+*************************/
+
+.formWrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.form {
+  display: flex;
+  width: 75%;
+  flex-direction: column;
+  margin-left: 1.5rem;
+  margin-right: 1.5rem;
+  margin-bottom: 3rem;
+  gap: 0.25rem;
+}
+
+#guestBook {
+  align-self: center;
+}
+
+#logForm {
+  align-self: center;
+}
+
+#newpForm {
+  align-self: center;
+}
+
+#editForm {
+  align-self: center;
+}
+
+#editComForm {
+  align-self: center;
+}
+
+#regForm {
+  align-self: center;
+}
+
+.form label {
+  font-family: "Open Sans", sans-serif;
+  color: #35393c;
+  margin-top: 0.5rem;
+}
+
+.form input {
+  padding: 0.5rem;
+}
+
+.form input[type="text"],
+.form input[type="password"],
+.form input[type="email"],
+.form textarea,
+.form select,
+.form input[type="submit"],
+.form button {
+  font-family: "Open Sans", sans-serif;
+  font-size: 1rem;
+}
+
+.form textarea {
+  padding: 0.5rem;
+  min-height: 5rem;
+}
+
+.form button,
+.form input[type="submit"] {
+  font-family: "Open-sans", sans-serif;
+  font-weight: 400;
+  align-self: center;
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 1.5rem;
+  background-color: #59a96a;
+  border: none;
+}
+
+.form select {
+  padding: 0.5rem;
+}
+
+#namelabel {
+  margin-top: 0;
+}
+
+#formlabel {
+  align-self: center;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+#formlabel h1 {
+  color: #2f2f2f;
+}
+
+.commentWrapper {
+  height: 100%;
+  margin: 0 auto;
+}
+
+.commentContainer {
+  background-color: #6f8695;
+  display: flex;
+  flex-direction: column;
+  margin: 1.5rem;
+  padding: 1.5rem;
+
+  overflow: hidden;
+}
+
+.commentContainer h3 {
+  color: #1e1e24;
+  margin-bottom: 0.5rem;
+}
+
+.commentContainer p {
+  color: #1e1e24;
+  line-height: 1.55;
+  max-width: 70ch;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.commentContainer #nameDate {
+  display: flex;
+  justify-content: space-between;
+}
+
+.commentContainer:nth-last-child(1) {
+  margin-bottom: 10rem;
+}
+
+.commentContainer #btn {
+  margin-top: 1rem;
+}
+
+/* *****************
+
+   WorkItems Page 
+
+******************* */
+
+#newp {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  margin-top: 1.5rem;
+  margin-left: 1.5rem;
+  margin-right: 1.5rem;
+  background-color: #6f8695;
+}
+
+#newp h3 {
+  color: #1e1e24;
+  padding: 1.5rem;
+  margin: 0;
+}
+
+.cardWrapper {
+  margin-left: 1.5rem;
+  margin-right: 1.5rem;
+}
+
+.card {
+  background-color: rgba(0, 0, 0, 0.25);
+
+  display: flex;
+  margin-bottom: 1.5rem;
+}
+
+div[id^="work"] {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+div[id^="work"] img {
+  padding: 1rem;
+  max-width: 75%;
+  align-self: center;
+}
+
+a[id^="itemHead"] {
+  align-self: center;
+  margin-bottom: 1.5rem;
+}
+
+#btn {
+  display: flex;
+  justify-content: space-between;
+}
+
+#btn a {
+  text-decoration: none;
+  color: #35393c;
+}
+
+.card p {
+  align-self: center;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  max-width: 25ch;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* *****************
+
+  Page Headers and Sub Headers.
+
+******************* */
+
+#heroHead {
+  justify-content: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+#heroHead img {
+  display: none;
+  max-width: 50%; /* Adjust the maximum width as needed */
+  height: auto; /* Maintain aspect ratio */
+}
+
+#homeHead h2,
+#homeHead h3 {
+  margin-top: 1.5rem;
+}
+
+#homeHead {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  max-width: 55ch;
+  margin-bottom: 10rem;
+}
+
+#newpHead {
+  align-self: center;
+  margin-bottom: 1.5rem;
+}
+
+#editComHead {
+  align-self: center;
+  margin-bottom: 1.5rem;
+}
+
+#workHead h1 {
+  align-self: center;
+}
+
+#workHead p {
+  align-self: center;
+}
+
+#contactHead {
+  align-self: center;
+  margin-bottom: 1.5rem;
+}
+
+#workHead {
+  margin-bottom: 1.5rem;
+}
+
+#logHead {
+  align-self: center;
+  margin-bottom: 1.5rem;
+}
+
+#regHead {
+  margin-bottom: 1.5rem;
+}
+
+#nameHead,
+#emailHead,
+#phoneHead,
+#instaHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+#regBox {
+  position: fixed;
+  bottom: 5%;
+  margin-left: 1.5rem;
+}
+
+#regLink {
+  color: #7d7abc;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+/*******************************************/
+
+/*          MEDIA BREAKPOINTS              */
+
+/*******************************************/
+
+@media screen and (min-width: 768px) {
+  .container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 0.25fr;
+    grid-gap: 1.5em;
+  }
+
+  #toggle:checked ~ #navItems {
+    height: 100%;
+    width: 25%;
+    left: 88%;
+  }
+
+  #hero {
+    width: 100%;
+    height: 100%;
+    grid-column: 1 / 4;
+    grid-row: 1 / 4;
+    background-color: #6f8695;
+  }
+
+  #heroHead img {
+    display: block;
+    position: absolute;
+    top: 25%;
+    right: 0%;
+
+    width: 100%; /* Adjust the maximum width as needed */
+    height: auto; /* Maintain aspect ratio */
+    scale: 0.75;
+  }
+
+  @keyframes spin {
+    from {
+      rotate: 0deg;
+    }
+    to {
+      rotate: 360deg;
+    }
+  }
+
+  #heroHead img {
+    transition-timing-function: ease-in-out;
+    animation: spin 30s linear infinite;
+  }
+
+  #homeHead {
+    display: flex;
+    grid-column: 1 / 5;
+    grid-row: 4 / 6;
+    justify-self: flex-start;
+    align-self: flex-start;
+  }
+
+  #homeHead h2 {
+    margin-top: 1.5rem;
+  }
+
+  .formWrapper {
+    grid-column: 1 / 5;
+    grid-row: 6 / 7;
+  }
+
+  #guestBook {
+    justify-self: center;
+    grid-column: 1 / 5;
+    grid-row: 7 / 8;
+  }
+
+  .cardWrapper {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    margin: 0;
+  }
+
+  .card {
+    width: 30%;
+    margin-right: 1.5rem;
+    margin-left: 1.5rem;
+  }
+
+  #workHead {
+    grid-column: 1 / 3;
+    grid-row: 1 / 2;
+    align-self: flex-start;
+    justify-self: flex-start;
+  }
+
+  #workHead2 {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+    mix-blend-mode: exclusion;
+    margin: 0;
+    align-self: flex-end;
+  }
+
+  #workDesc {
+    grid-column: 1 / 3;
+    grid-row: 2 / 3;
+    align-self: flex-start;
+    justify-self: flex-start;
+  }
+
+  #contactHead {
+    grid-column: 1 / 5;
+    grid-row: 1 / 2;
+    justify-self: center;
+  }
+
+  #nameHead {
+    grid-column: 2 / 4;
+    grid-row: 2 / 3;
+
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  #phoneHead {
+    grid-column: 2 / 4;
+    grid-row: 3 / 4;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  #emailHead {
+    grid-column: 2 / 4;
+    grid-row: 4 / 5;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  #instaHead {
+    grid-column: 2 / 4;
+    grid-row: 5 / 6;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  #logHead {
+    grid-column: 1 / 5;
+    grid-row: 1 / 2;
+    justify-self: center;
+    align-self: center;
+    margin: 0;
+  }
+
+  #regBox {
+    justify-self: center;
+    align-self: flex-end;
+    grid-column: 1 / 5;
+    grid-row: 1 / 2;
+  }
+
+  #regBox h3 {
+    margin-bottom: 0.25rem;
+  }
+
+  #logForm {
+    margin-top: 1.5rem;
+    width: 50%;
+    align-self: center;
+  }
+
+  #regHead {
+    grid-column: 1 / 5;
+    grid-row: 1 / 2;
+    align-self: flex-start;
+    margin: 0;
+  }
+
+  #regHead2 {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+    margin: 0;
+    align-self: flex-end;
+    mix-blend-mode: exclusion;
+  }
+
+  #regForm {
+    grid-column: 2 / 5;
+    grid-row: 2 / 3;
+    align-self: center;
+    margin-bottom: 0;
+  }
+
+  #newpHead {
+    grid-column: 1 / 5;
+    justify-self: center;
+  }
+
+  #newpForm {
+    width: 50%;
+    align-self: center;
+  }
+
+  #editHead {
+    grid-column: 1 / 5;
+  }
+
+  #editForm {
+    align-self: center;
+    margin: 0 auto;
+  }
+
+  #editComHead {
+    grid-column: 1 / 3;
+  }
+
+  #editComForm {
+    grid-column: 2 / 4;
+    grid-row: 2 / 4;
+  }
+}

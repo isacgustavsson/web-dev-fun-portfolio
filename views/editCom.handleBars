@@ -1,0 +1,15 @@
+<div class="container">
+  <h1 id="editComHead">Edit Comment.</h1>
+</div>
+
+<div class="formWrapper">
+  <form
+    id="editComForm"
+    class="form"
+    action="/edit/{{comment.gid}}"
+    method="POST"
+  >
+    <textarea name="comment">{{comment.gcomment}}</textarea>
+    <button type="submit">Update Comment.</button>
+  </form>
+</div>

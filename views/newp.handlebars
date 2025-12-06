@@ -1,0 +1,51 @@
+<div class="container">
+  <h1 id="newpHead">New Project.</h1>
+</div>
+
+
+{{#if isLoggedIn}}
+  {{#if isAdmin}}
+  <div class="formWrapper">
+    <form id="newpForm" class="form" action="/newp" method="post">
+      <label for="wname">Project name :</label>
+      <input type="text" id="wname" name="wname" required="required" />
+      <br />
+      <textarea
+        name="wdesc"
+        id="wdesc"
+        cols="30"
+        rows="10"
+        placeholder="project description.."
+        required="required"
+      ></textarea>
+      <br />
+      <label for="wtype">Project Type :</label>
+      <select id="wtype" name="wtype" required="required">
+        <option value="web">Web Development.</option>
+        <option value="game">Game Development.</option>
+        <option value="design">Graphic Design.</option>
+        <option value="uxd">User Experience Design.</option>
+      </select>
+      <br />
+      <label for="wimg">Project image URL :</label>
+      <input
+        type="text"
+        id="wimg"
+        name="wimg"
+        placeholder="/img/"
+        required="required"
+      />
+      <br />
+      <input type="submit" value="Add Project." />
+    </form>
+  {{else}}
+    <p>sorry, only cool people can add new projects.</p>
+  {{/if}}
+{{else}}
+  <p>login required.
+    <br />
+    <a href="/login">login.</a></p>
+    </div>
+</div>
+
+{{/if}}

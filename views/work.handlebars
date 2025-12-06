@@ -1,0 +1,42 @@
+    <div id="workHead" class="container">
+    <h1>Work.</h1>
+    <p>Below are various projects that I have worked on.</p>
+    </div>
+
+  {{#if isAdmin}}
+      <a id="newp" href="/newp"><h3>new project.</h3></a>
+  {{/if}}
+
+  {{#if hasDatabaseError}}
+    <div>
+      oops! there was a problem with the database:
+      <br />
+      {{theError}}
+    </div>
+  {{else}}
+
+      <div class="cardWrapper">
+    {{#each workItems}}
+    <div class="card">
+      <div id="work{{wid}}">
+        <a id="itemHead" href="work/{{wid}}">
+          <h4>{{wname}}</h4>
+        </a>
+
+        <img src="{{wimgURL}}" alt="project image">
+
+        <p>{{wdesc}}</p>
+
+            {{#if ../isAdmin}}
+            <div id="btn">
+          <a href="/work/edit/{{wid}}">Edit.</a>
+          <a  href="/work/delete/{{wid}}" class="important">Delete.</a>
+          </div>
+        {{/if}}
+
+      </div>
+      </div>
+    {{/each}}
+    </div>
+
+  {{/if }}
