@@ -1,500 +1,398 @@
-const express = require("express"); // loads the express package
-const { engine } = require("express-handlebars"); // loads handlebars for Express
-const sqlite3 = require("sqlite3");
-const bodyParser = require("body-parser"); // loads the body-parser package
+// ----------------------
+// Imports
+// ----------------------
+const express = require("express");
+const { engine } = require("express-handlebars");
+const { Pool } = require("pg");
+const bodyParser = require("body-parser");
 const session = require("express-session");
-const connectSqlite3 = require("connect-sqlite3");
+const connectPostgres = require("connect-pg-simple")(session);
 const bcrypt = require("bcrypt");
 
-const db = new sqlite3.Database("portfolio-ig.db");
+// ----------------------
+// PostgreSQL setup
+// ----------------------
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }, // krävs av Render
+});
 
-const app = express(); // creates the Express application
-const port = 8080; // defines the port
+// ----------------------
+// Express app setup
+// ----------------------
+const app = express();
+const port = process.env.PORT || 8080;
 
-// defines handlebars engine
+// Handlebars setup
 app.engine("handlebars", engine());
-// defines the view engine to be handlebars
 app.set("view engine", "handlebars");
-// defines the views directory
 app.set("views", "./views");
 
-// define static directory "public" to access css/ and img/
+// Static files
 app.use(express.static("public"));
 
-//-----------
-// Post Forms
-//-----------
+// Body parser
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-//-----------
-// Session
-//-----------
-
-// store sessions in the database.
-const SQLiteStore = connectSqlite3(session);
-
-// define session.
+// Sessions
 app.use(
   session({
-    store: new SQLiteStore({ db: "session-db.db" }),
+    store: new connectPostgres({
+      pool: pool,
+      tableName: "session",
+    }),
     saveUninitialized: false,
     resave: false,
     secret: "J@ghar3nhår1gkatt$0mh3t3rFran$&Är6294192674034156294årqammaL",
   })
 );
 
-app.post("/register", (req, res) => {
-  const username = req.body.username;
-  const password = req.body.password;
-
-  bcrypt.hash(password, 10, (error, hash) => {
-    if (error) {
-      console.log("ERROR ", error);
-      res.redirect("/register");
-    } else {
-      db.run(
-        "CREATE TABLE IF NOT EXISTS users (userid INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, password TEXT NOT NULL)",
-        (error) => {
-          if (error) {
-            console.log("ERROR ", error);
-          } else {
-            console.log(" --> users table created!");
-
-            db.run(
-              "INSERT INTO users ( username, password) VALUES (?,?)",
-              [username, hash],
-              (error) => {
-                if (error) {
-                  console.log("ERROR ", error);
-                } else {
-                  console.log(" --> user registration successful!");
-                  res.redirect("/login");
-                }
-              }
-            );
-          }
-        }
-      );
-    }
-  });
-});
-
-// check the login and password of a user.
-app.post("/login", (req, res) => {
-  const username = req.body.username;
-  const password = req.body.password;
-
-  db.get("SELECT * FROM users WHERE username=?", [username], (error, user) => {
-    if (error || !user) {
-      console.log("ERROR ", "user not found");
-      res.redirect("/login");
-    } else {
-      bcrypt.compare(password, user.password, (error, result) => {
-        if (error) {
-          console.log("ERROR ", error);
-        } else if (result) {
-          console.log("welcome back, " + username + "...");
-          req.session.isLoggedIn = true;
-          req.session.name = username;
-          req.session.isAdmin = username == "webmastr";
-          res.redirect("/");
-        } else {
-          console.log("ERROR ", "incorrect password");
-          res.redirect("/login");
-        }
-      });
-    }
-  });
-});
-
-db.run(
-  "CREATE TABLE IF NOT EXISTS workItems (wid INTEGER PRIMARY KEY AUTOINCREMENT, wname TEXT NOT NULL, wdesc TEXT NOT NULL, wtype TEXT NOT NULL, wimgURL TEXT NOT NULL)",
-  (error) => {
-    if (error) {
-      console.log("ERROR ", error);
-    } else {
-      console.log(" --> workItems table created!");
-
-      // workItems.forEach((item) => {
-      //   db.run(
-      //     "INSERT INTO workItems (wname, wdesc, wtype, wimgURL) VALUES (?,?,?,?)",
-      //     [item.name, item.desc, item.type, item.img],
-      //     (error) => {
-      //       if (error) {
-      //         console.log("ERROR ", error);
-      //       } else {
-      //         console.log(" line added to the workItems table!");
-      //       }
-      //     }
-      //   );
-      // });
-    }
-  }
-);
-
-// CREATE A TABLE FOR GUESTBOOK //
-
-db.run(
-  "CREATE TABLE IF NOT EXISTS guestbook (gid INTEGER PRIMARY KEY AUTOINCREMENT, gname TEXT NOT NULL, gemail TEXT NOT NULL, gcomment TEXT NOT NULL, gdate TEXT)",
-  (error) => {
-    if (error) {
-      console.log("ERROR ", error);
-    } else {
-      console.log(" --> guestbook table created!");
-    }
-  }
-);
-
-// HANDLE GUESTBOOK FORM
-
-app.post("/submit-comment", (req, res) => {
-  // The code below that handles the date was generated with some help from Codeium AI //
-  const { name, email, comment } = req.body;
-  const currentDate = new Date();
-
-  const day = currentDate.getDate();
-  const month = currentDate.getMonth() + 1; // Months are zero-based, so add 1
-  const year = currentDate.getFullYear();
-  const hours = currentDate.getHours();
-  const minutes = currentDate.getMinutes();
-
-  // Format the date as you desire
-  const formattedDate = `${day}/${month}/${year} ${hours}:${minutes}`;
-
-  db.run(
-    "INSERT INTO guestbook (gname, gemail, gcomment, gdate) VALUES (?,?,?,?)",
-    [name, email, comment, formattedDate],
-    (error) => {
-      if (error) {
-        console.log("ERROR ", error);
-        res.status(500).send("Internal Server Error");
-      } else {
-        console.log("comment successfully added!");
-      }
-    }
-  );
-
-  db.all("SELECT * FROM guestbook ORDER BY gdate DESC", (error, comments) => {
-    if (error) {
-      console.log("Error retrieving comments:", error);
-      res.status(500).send("Error retrieving comments");
-    } else {
-      console.log(comments);
-      res.render("home.handlebars", { comments });
-    }
-  });
-});
-
-app.get("/edit/:id", (req, res) => {
-  const id = req.params.id;
-
-  db.get("SELECT * FROM guestbook WHERE gid=?", [id], (error, comment) => {
-    if (error) {
-      console.log("ERROR ", error);
-      res.render("/", model);
-    } else {
-      console.log("MODIFY: ", JSON.stringify(comment));
-      console.log("MODIFY: ", comment);
-      res.render("editCom.handlebars", { comment });
-    }
-  });
-});
-
-app.get("/delete/:id", (req, res) => {
-  const id = req.params.id;
-
-  db.run("DELETE FROM guestbook WHERE gid=?", [id], (error) => {
-    if (error) {
-      console.log("ERROR: ", error);
-    } else {
-      console.log("Comment Deleted!");
-    }
-    res.redirect("/");
-  });
-});
-
-// POST request to update a guestbook comment
-app.post("/edit/:id", (req, res) => {
-  const id = req.params.id;
-  const updatedComment = req.body.comment;
-
-  db.run(
-    "UPDATE guestbook SET gcomment=? WHERE gid=?",
-    [updatedComment, id],
-    (error) => {
-      if (error) {
-        console.log("Error updating comment: ", error);
-      } else {
-        console.log("Comment updated!");
-      }
-      res.redirect("/");
-    }
-  );
-});
-
-// CONTROLLER (THE BOSS) //
-
-app.get("/", function (req, res) {
-  console.log("SESSION: ", req.session);
-
-  const model = {
-    isLoggedIn: req.session.isLoggedIn,
-    name: req.session.name,
-    isAdmin: req.session.isAdmin,
-  };
-
-  // RENDER GUESTBOOK POSTS ON HOMEPAGE //
-
-  db.all("SELECT * FROM guestbook ORDER BY gdate ASC", (error, comments) => {
-    if (error) {
-      console.log("Error retrieving comments:", error);
-      res.status(500).send("Error retrieving comments");
-    } else {
-      model.comments = comments;
-      res.render("home.handlebars", model);
-    }
-  });
-});
-
-// RETRIEVE & RENDER PROJECTS (workItems) //
-
-app.get("/work", function (req, res) {
-  db.all("SELECT * FROM workItems", function (error, theWorkItems) {
-    if (error) {
-      const model = {
-        dbError: true,
-        theError: error,
-        workItems: [],
-        isLoggedIn: req.session.isLoggedIn,
-        name: req.session.name,
-        isAdmin: req.session.isAdmin,
-      };
-      res.render("work.handlebars", model);
-    } else {
-      const model = {
-        dbError: false,
-        theError: "",
-        workItems: theWorkItems,
-        isLoggedIn: req.session.isLoggedIn,
-        name: req.session.name,
-        isAdmin: req.session.isAdmin,
-      };
-      res.render("work.handlebars", model);
-    }
-  });
-});
-
-// RETRIEVE ID FROM PROJECT (workItem) //
-
-app.get("/work/:id", (req, res) => {
-  const id = req.params.id;
-
-  db.get("SELECT * FROM workItems WHERE wid=?", [id], (error, workItem) => {
-    if (error) {
-      console.log("Error: ", error);
-      res.redirect("/");
-    } else {
-      res.render("workItems.handlebars", { wi: workItem });
-    }
-  });
-});
-
-// EDIT PROJECT (workItem) //
-
-app.get("/work/edit/:id", (req, res) => {
-  const id = req.params.id;
-  console.log("EDIT: ", id);
-  db.get(
-    "SELECT * FROM workItems WHERE wid=?",
-    [id],
-    function (error, workItems) {
-      if (error) {
-        console.log("ERROR ", error);
-        const model = {
-          dbError: true,
-          theError: error,
-          workItems: {},
-          isLoggedIn: req.session.isLoggedIn,
-          name: req.session.name,
-          isAdmin: req.session.isAdmin,
-        };
-        res.render("edit.handlebars", model);
-      } else {
-        console.log("MODIFY: ", JSON.stringify(workItems));
-        console.log("MODIFY: ", workItems);
-        const model = {
-          dbError: false,
-          theError: "",
-          workItems: workItems,
-          isLoggedIn: req.session.isLoggedIn,
-          name: req.session.name,
-          isAdmin: req.session.isAdmin,
-          helpers: {
-            theTypeW(value) {
-              return value == "web";
-            },
-            theTypeG(value) {
-              return value == "game";
-            },
-            theTypeD(value) {
-              return value == "design";
-            },
-            theTypeU(value) {
-              return value == "uxd";
-            },
-          },
-        };
-        res.render("edit.handlebars", model);
-      }
-    }
-  );
-});
-
-app.post("/work/edit/:id", (req, res) => {
-  const id = req.params.id;
-  const newp = [
-    req.body.wname,
-    req.body.wdesc,
-    req.body.wtype,
-    req.body.wimg,
-    id,
-  ];
-  if (req.session.isLoggedIn == true && req.session.isAdmin == true) {
-    db.run(
-      "UPDATE workItems SET wname=?, wdesc=?, wtype=?, wimgURL=? WHERE wid=?",
-      newp,
-      (error) => {
-        if (error) {
-          console.log("ERROR ", error);
-        } else {
-          console.log("Project Updated!");
-        }
-        res.redirect("/work");
-      }
+// ----------------------
+// Create tables
+// ----------------------
+async function createTables() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      userid SERIAL PRIMARY KEY,
+      username TEXT NOT NULL,
+      password TEXT NOT NULL
     );
-  } else {
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS workItems (
+      wid SERIAL PRIMARY KEY,
+      wname TEXT NOT NULL,
+      wdesc TEXT NOT NULL,
+      wtype TEXT NOT NULL,
+      wimgURL TEXT NOT NULL
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS guestbook (
+      gid SERIAL PRIMARY KEY,
+      gname TEXT NOT NULL,
+      gemail TEXT NOT NULL,
+      gcomment TEXT NOT NULL,
+      gdate TEXT
+    );
+  `);
+
+  console.log("Tables ready!");
+}
+
+createTables().catch((err) => console.error("Error creating tables:", err));
+
+// ----------------------
+// Register
+// ----------------------
+app.post("/register", async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const hash = await bcrypt.hash(password, 10);
+
+    await pool.query(
+      "INSERT INTO users (username, password) VALUES ($1, $2)",
+      [username, hash]
+    );
+
+    console.log("User registered:", username);
+    res.redirect("/login");
+  } catch (error) {
+    console.log("Register error:", error);
+    res.redirect("/register");
+  }
+});
+
+// ----------------------
+// Login
+// ----------------------
+app.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const result = await pool.query("SELECT * FROM users WHERE username=$1", [
+      username,
+    ]);
+    const user = result.rows[0];
+
+    if (!user) {
+      console.log("User not found:", username);
+      return res.redirect("/login");
+    }
+
+    const match = await bcrypt.compare(password, user.password);
+
+    if (match) {
+      console.log("Welcome back:", username);
+      req.session.isLoggedIn = true;
+      req.session.name = username;
+      req.session.isAdmin = username === "webmastr";
+      res.redirect("/");
+    } else {
+      console.log("Incorrect password for", username);
+      res.redirect("/login");
+    }
+  } catch (error) {
+    console.log("Login error:", error);
     res.redirect("/login");
   }
 });
 
-// DELETE PROJECT (workItem) //
+// ----------------------
+// Guestbook submit
+// ----------------------
+app.post("/submit-comment", async (req, res) => {
+  const { name, email, comment } = req.body;
+  const currentDate = new Date();
+  const formattedDate = `${currentDate.getDate()}/${
+    currentDate.getMonth() + 1
+  }/${currentDate.getFullYear()} ${currentDate.getHours()}:${currentDate.getMinutes()}`;
 
-app.get("/work/delete/:id", (req, res) => {
-  const id = req.params.id;
-  if (req.session.isLoggedIn == true && req.session.isAdmin == true) {
-    db.run(
-      "DELETE FROM workItems WHERE wid=?",
-      [id],
-      function (error, workItems) {
-        if (error) {
-          const model = {
-            dbError: true,
-            theError: error,
-            isLoggedIn: req.session.isLoggedIn,
-            name: req.session.name,
-            isAdmin: req.session.isAdmin,
-          };
-          res.render("home.handlebars", model);
-        } else {
-          const model = {
-            dbError: false,
-            theError: "",
-            isLoggedIn: req.session.isLoggedIn,
-            name: req.session.name,
-            isAdmin: req.session.isAdmin,
-          };
-          res.render("work.handlebars", model);
-        }
-      }
+  try {
+    await pool.query(
+      "INSERT INTO guestbook (gname, gemail, gcomment, gdate) VALUES ($1,$2,$3,$4)",
+      [name, email, comment, formattedDate]
     );
-  } else {
+
+    const result = await pool.query(
+      "SELECT * FROM guestbook ORDER BY gdate DESC"
+    );
+    const comments = result.rows;
+
+    res.render("home.handlebars", { comments });
+  } catch (error) {
+    console.log("Guestbook error:", error);
+    res.status(500).send("Error");
+  }
+});
+
+// ----------------------
+// Guestbook edit/delete
+// ----------------------
+app.get("/edit/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const result = await pool.query("SELECT * FROM guestbook WHERE gid=$1", [
+      id,
+    ]);
+    const comment = result.rows[0];
+    res.render("editCom.handlebars", { comment });
+  } catch (error) {
+    console.log(error);
     res.redirect("/");
   }
 });
 
-// CONTACT PAGE //
+app.post("/edit/:id", async (req, res) => {
+  const id = req.params.id;
+  const updatedComment = req.body.comment;
 
-app.get("/contact", function (req, res) {
+  try {
+    await pool.query("UPDATE guestbook SET gcomment=$1 WHERE gid=$2", [
+      updatedComment,
+      id,
+    ]);
+    res.redirect("/");
+  } catch (error) {
+    console.log("Edit error:", error);
+    res.redirect("/");
+  }
+});
+
+app.get("/delete/:id", async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    await pool.query("DELETE FROM guestbook WHERE gid=$1", [id]);
+    res.redirect("/");
+  } catch (error) {
+    console.log("Delete error:", error);
+    res.redirect("/");
+  }
+});
+
+// ----------------------
+// Home route
+// ----------------------
+app.get("/", async (req, res) => {
   const model = {
     isLoggedIn: req.session.isLoggedIn,
     name: req.session.name,
     isAdmin: req.session.isAdmin,
   };
 
-  res.render("contact.handlebars", model);
+  try {
+    const result = await pool.query("SELECT * FROM guestbook ORDER BY gdate ASC");
+    model.comments = result.rows;
+    res.render("home.handlebars", model);
+  } catch (error) {
+    console.log("Error fetching guestbook:", error);
+    res.status(500).send("Error");
+  }
 });
 
-// NEW PROJECT //
-
-app.get("/newp", (req, res) => {
-  if (req.session.isLoggedIn == true && req.session.isAdmin == true) {
+// ----------------------
+// Work routes
+// ----------------------
+app.get("/work", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM workItems");
     const model = {
+      workItems: result.rows,
+      isLoggedIn: req.session.isLoggedIn,
+      name: req.session.name,
+      isAdmin: req.session.isAdmin,
+      dbError: false,
+      theError: "",
+    };
+    res.render("work.handlebars", model);
+  } catch (error) {
+    console.log("Work error:", error);
+    const model = {
+      workItems: [],
+      dbError: true,
+      theError: error,
       isLoggedIn: req.session.isLoggedIn,
       name: req.session.name,
       isAdmin: req.session.isAdmin,
     };
-    res.render("newp.handlebars", model);
-  } else {
-    res.redirect("/login");
+    res.render("work.handlebars", model);
   }
 });
 
-app.post("/newp", (req, res) => {
-  const newp = [
-    req.body.wid,
-    req.body.wname,
-    req.body.wdesc,
-    req.body.wtype,
-    req.body.wimg,
-  ];
-
-  if (req.session.isLoggedIn == true && req.session.isAdmin == true) {
-    db.run("INSERT INTO workItems VALUES (?, ?, ?, ?, ?)", newp, (error) => {
-      if (error) {
-        console.log("ERROR ", error);
-      } else {
-        console.log(" line added to the workItems table!");
-      }
-    });
+app.get("/work/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const result = await pool.query("SELECT * FROM workItems WHERE wid=$1", [id]);
+    const workItem = result.rows[0];
+    res.render("workItems.handlebars", { wi: workItem });
+  } catch (error) {
+    console.log(error);
     res.redirect("/work");
+  }
+});
+
+// Work edit, update, delete
+app.get("/work/edit/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const result = await pool.query("SELECT * FROM workItems WHERE wid=$1", [id]);
+    const model = {
+      workItems: result.rows[0],
+      isLoggedIn: req.session.isLoggedIn,
+      name: req.session.name,
+      isAdmin: req.session.isAdmin,
+    };
+    res.render("edit.handlebars", model);
+  } catch (error) {
+    console.log(error);
+    res.redirect("/work");
+  }
+});
+
+app.post("/work/edit/:id", async (req, res) => {
+  const id = req.params.id;
+  const { wname, wdesc, wtype, wimg } = req.body;
+  if (req.session.isLoggedIn && req.session.isAdmin) {
+    try {
+      await pool.query(
+        "UPDATE workItems SET wname=$1, wdesc=$2, wtype=$3, wimgURL=$4 WHERE wid=$5",
+        [wname, wdesc, wtype, wimg, id]
+      );
+      res.redirect("/work");
+    } catch (error) {
+      console.log(error);
+      res.redirect("/work");
+    }
   } else {
     res.redirect("/login");
   }
 });
 
-// LOGIN & LOGOUT SECTION //
+app.get("/work/delete/:id", async (req, res) => {
+  const id = req.params.id;
+  if (req.session.isLoggedIn && req.session.isAdmin) {
+    try {
+      await pool.query("DELETE FROM workItems WHERE wid=$1", [id]);
+      res.redirect("/work");
+    } catch (error) {
+      console.log(error);
+      res.redirect("/work");
+    }
+  } else {
+    res.redirect("/login");
+  }
+});
 
-app.get("/login", (req, res) => {
-  const model = {
+// New project
+app.get("/newp", (req, res) => {
+  if (req.session.isLoggedIn && req.session.isAdmin) {
+    res.render("newp.handlebars", {
+      isLoggedIn: req.session.isLoggedIn,
+      name: req.session.name,
+      isAdmin: req.session.isAdmin,
+    });
+  } else {
+    res.redirect("/login");
+  }
+});
+
+app.post("/newp", async (req, res) => {
+  const { wname, wdesc, wtype, wimg } = req.body;
+  if (req.session.isLoggedIn && req.session.isAdmin) {
+    try {
+      await pool.query(
+        "INSERT INTO workItems (wname, wdesc, wtype, wimgURL) VALUES ($1,$2,$3,$4)",
+        [wname, wdesc, wtype, wimg]
+      );
+      res.redirect("/work");
+    } catch (error) {
+      console.log(error);
+      res.redirect("/newp");
+    }
+  } else {
+    res.redirect("/login");
+  }
+});
+
+// Contact page
+app.get("/contact", (req, res) => {
+  res.render("contact.handlebars", {
     isLoggedIn: req.session.isLoggedIn,
     name: req.session.name,
     isAdmin: req.session.isAdmin,
-  };
-  res.render("login.handlebars", model);
+  });
+});
+
+// Login & Register pages
+app.get("/login", (req, res) => {
+  res.render("login.handlebars", {
+    isLoggedIn: req.session.isLoggedIn,
+    name: req.session.name,
+    isAdmin: req.session.isAdmin,
+  });
 });
 
 app.get("/register", (req, res) => {
-  const model = {};
-  res.render("register.handlebars", model);
+  res.render("register.handlebars");
 });
 
+// Logout
 app.get("/logout", (req, res) => {
   req.session.destroy((err) => {
-    console.log("Something went wrong.", err);
+    if (err) console.log("Logout error:", err);
   });
-  console.log("Logged out.");
   res.redirect("/");
 });
 
-// defines the final default route 404 NOT FOUND //
-
-app.use(function (req, res) {
+// 404 route
+app.use((req, res) => {
   res.status(404).render("404.handlebars");
 });
 
-// runs the app and listens to the port //
-
+// Start server
 app.listen(port, () => {
   console.log(`Server running and listening on port ${port}...`);
 });
