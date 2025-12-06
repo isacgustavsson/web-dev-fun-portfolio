@@ -6,28 +6,17 @@
 </div>
 
 <div id="homeHead">
-  <h1>Hello.</h1>
-  <br>
-  <p>
-    I am a Graphic Design & Web Development student from Jönköping, Sweden.
-  </p>
-  
-  <h2>I'm glad that you're here.</h2>
-
-  <p>This website is a backend project which was built using Node.js, Express, SQLite3,
+  <h1>Hello!</h1>
+  <br>  
+  <p>This website is a backend project which was built in Javascript using Node.js, Express, SQLite3,
     Handlebars.js & CSS.
   </p>
 
-    <h3>Let's Talk!</h3>
-
+  <h3>Feel free to try it out!</h3>
   <p>You can leave a message in the guestbook by filling out the form below. 
     The message will be posted as a comment for anyone to see! Please be kind. </p>
 
-
-
 </div>
-
-
 <form id="guestBook" class="form" action="/submit-comment" method="POST">
   <label id="formlabel" for="guestBook"> <h1>Guestbook</h1></label>
   <label id="namelabel" for="name"><p>Name:</p> </label>
@@ -53,7 +42,7 @@
     id="comment"
     max-length="500"
     name="comment"
-    placeholder="Wow! Your work is amazing!"
+    placeholder="exampe guestbook entry.."
     required
   ></textarea>
 
@@ -61,8 +50,6 @@
 </form>
 
 </div>
-
-
 
 <div class="commentWrapper">
 {{#each comments}}
@@ -73,7 +60,6 @@
         </div>
 
     <p>{{gcomment}}</p>
-
 
                 {{#if ../isAdmin}}
             <div id="btn">
