@@ -1,3 +1,6 @@
+# Node modules
+node_modules/
+
 # Logs
 logs
 *.log
@@ -8,6 +11,10 @@ lerna-debug.log*
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# SQLite database files
+portfolio-ig.db
+session-db.db
 
 # Runtime data
 pids
@@ -49,6 +56,9 @@ web_modules/
 
 # Optional npm cache directory
 .npm
+
+# Logs
+npm-debug.log
 
 # Optional eslint cache
 .eslintcache
