@@ -114,7 +114,7 @@ app.post("/login", async (req, res) => {
 
   try {
     // Hämta användare från databasen
-    const userResult = await db.query(
+    const userResult = await pool.query(
       "SELECT * FROM users WHERE username = $1",
       [username]
     );
