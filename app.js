@@ -80,6 +80,20 @@ async function createTables() {
     );
   `);
 
+  await pool.query(`
+  CREATE TABLE IF NOT EXISTS "session" (
+    "sid" varchar NOT NULL COLLATE "default",
+    "sess" json NOT NULL,
+    "expire" timestamp(6) NOT NULL,
+    PRIMARY KEY ("sid")
+  );
+`);
+
+await pool.query(`
+  CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire");
+`);
+
+
   console.log("Tables ready!");
 }
 
