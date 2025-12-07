@@ -111,35 +111,42 @@ app.post("/register", async (req, res) => {
 // ----------------------
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
+
   try {
-    const result = await pool.query("SELECT * FROM users WHERE username=$1", [
-      username,
-    ]);
-    const user = result.rows[0];
+    // Hämta användare från databasen
+    const userResult = await db.query(
+      "SELECT * FROM users WHERE username = $1",
+      [username]
+    );
+
+    const user = userResult.rows[0];
 
     if (!user) {
-      console.log("User not found:", username);
+      console.log("User not found");
       return res.redirect("/login");
     }
 
+    // Jämför lösenord
     const match = await bcrypt.compare(password, user.password);
 
     if (match) {
-      console.log("Welcome back:", username);
+      // Logga in användaren och sätt session
       req.session.isLoggedIn = true;
-      req.session.name = username;
-      req.session.isAdmin = username === "webmastr";
+      req.session.name = user.username;
+      req.session.isAdmin = user.isadmin;
+
+      console.log("Welcome back:", user.username);
       res.redirect("/");
     } else {
-      console.log("Incorrect password for", username);
+      console.log("Incorrect password");
       res.redirect("/login");
     }
+
   } catch (error) {
     console.log("Login error:", error);
     res.redirect("/login");
   }
 });
-
 // ----------------------
 // Guestbook submit
 // ----------------------
