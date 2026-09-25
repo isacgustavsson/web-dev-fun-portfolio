@@ -2,9 +2,6 @@
 
 En portfolio‑webbapp byggd med Node.js, Express, Handlebars och PostgreSQL — med frontend, inloggning, gästbok och projektsida.
 
-## 🚀 Live site  
-[web-dev-fun-portfolio.onrender.com](https://web-dev-fun-portfolio.onrender.com/) — besök för att se projektet i drift.
-
 ## 📄 Innehåll  
 - Startsida med gästbok  
 - Inloggning & registrering (lösenord hashade med bcrypt)  
